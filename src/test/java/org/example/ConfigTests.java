@@ -6,11 +6,10 @@ import org.junit.jupiter.api.Test;
 import static com.codeborne.selenide.Condition.exist;
 import static com.codeborne.selenide.Condition.text;
 import com.codeborne.selenide.Configuration;
-import static com.codeborne.selenide.DragAndDropOptions.to;
 import static com.codeborne.selenide.Selenide.$;
 import static com.codeborne.selenide.Selenide.open;
 
-public class DndTests {
+public class ConfigTests {
 
     @BeforeAll
     static void setUp() {
@@ -26,37 +25,36 @@ public class DndTests {
     }
 
     @Test
-    void task1_1_dragToCart() {
-        open(TestConfig.get("base.url"));
+    void task1_configTest(){
+        String baseUrl = TestConfig.get("base.url");
+        String apiUrl = TestConfig.get("api.url");
 
-        String productName = $(".product-card h4").getText();
+        String username = TestConfig.get("admin.username");
+        String password = TestConfig.get("admin.password");
 
-        $(".product-card")
-                .dragAndDrop(to("#open-cart-btn"));
+        String productName
+                = TestConfig.get("product.name") + " " + System.currentTimeMillis();
 
-        $("#open-cart-btn").click();
+        String productPrice
+                = TestConfig.get("product.price");
 
-        $("#cart-items")
-                .shouldHave(text(productName));
-    }
+        open(baseUrl + "/admin");
 
-    @Test
-    void task1_2_removeFromCart() {
-        open(TestConfig.get("base.url"));
+        $("#username").sendKeys(username);
+        $("#password").sendKeys(password);
+        $("button[type='submit']").click();
 
-        String productName = $(".product-card h4").getText();
+        $("#n-name").sendKeys(productName);
+        $("#n-price").sendKeys(productPrice);
+        $("#add-btn").click();
 
-        $(".product-card button[data-action='add-to-cart']").click();
+        open(baseUrl);
 
-        $("#open-cart-btn").click();
+        $(".product-card[data-name='" + productName + "']")
+                .shouldBe(exist);
+        open(apiUrl + "/goods/list?page=0&size=20");
 
-        $(".cart-item")
-                .shouldHave(text(productName));
+        $("body").shouldHave(text("goods"));
 
-        $(".cart-item button[data-action='remove']")
-                .click();
-
-        $(".cart-item")
-                .shouldNot(exist);
     }
 }
